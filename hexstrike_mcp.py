@@ -5459,7 +5459,7 @@ def main():
         mcp = setup_mcp_server(hexstrike_client)
         logger.info("🚀 Starting HexStrike AI MCP server")
         logger.info("🤖 Ready to serve AI agents with enhanced cybersecurity capabilities")
-        mcp.run()
+        mcp.run(transport="streamable-http")
     except Exception as e:
         logger.error(f"💥 Error starting MCP server: {str(e)}")
         import traceback
