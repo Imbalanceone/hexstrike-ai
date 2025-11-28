@@ -274,7 +274,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     Returns:
         Configured FastMCP instance
     """
-    mcp = FastMCP("hexstrike-ai-mcp",port=8001)
+    mcp = FastMCP("hexstrike-ai-mcp",port=8001,host="0.0.0.0")
 
     # ============================================================================
     # CORE NETWORK SCANNING TOOLS
