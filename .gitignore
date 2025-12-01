@@ -1,0 +1,4 @@
+.venv
+build
+dist
+configs/secret-parameters.yaml
