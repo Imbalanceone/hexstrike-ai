@@ -1,0 +1,2 @@
+uv run pyinstaller hexstrike_server.py --onefile --name hexstrike_server
+uv run pyinstaller hexstrike_mcp.py --onefile --name hexstrike_mcp --add-data "configs:data/configs"

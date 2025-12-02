@@ -26,7 +26,13 @@ import requests
 import time
 from datetime import datetime
 
+import uvicorn
 from mcp.server.fastmcp import FastMCP
+from starlette.responses import JSONResponse
+from fastapi import FastAPI
+from fastapi import Request
+from app.parameters import HexstrikeParams, HexstrikeSecretParams
+
 
 class HexStrikeColors:
     """Enhanced color palette matching the server's ModernVisualEngine.COLORS"""
@@ -264,7 +270,7 @@ class HexStrikeClient:
         """
         return self.safe_get("health")
 
-def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
+def setup_mcp_server(hexstrike_client: HexStrikeClient):
     """
     Set up the MCP server with all enhanced tool functions
 
@@ -274,7 +280,7 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
     Returns:
         Configured FastMCP instance
     """
-    mcp = FastMCP("hexstrike-ai-mcp",port=8001,host="0.0.0.0")
+    mcp = FastMCP("hexstrike-ai-mcp", port=8001, host="0.0.0.0")
 
     # ============================================================================
     # CORE NETWORK SCANNING TOOLS
@@ -5411,7 +5417,23 @@ def setup_mcp_server(hexstrike_client: HexStrikeClient) -> FastMCP:
 
         return result
 
-    return mcp
+    mcp_app = mcp.streamable_http_app()
+    app = FastAPI(
+        lifespan=lambda _: mcp.session_manager.run(),
+    )
+
+    app.mount("/", mcp_app)
+
+    @app.middleware("http")
+    async def middleware_handler(request: Request, call_next):
+        user_ip = request.client.host
+        if HexstrikeParams.params.USE_IP_FILTER and not (user_ip in HexstrikeSecretParams.params.DEV_IP or user_ip in HexstrikeSecretParams.params.HOSTS):
+            return JSONResponse(status_code=401, content=f'Unauthorized ip - {user_ip}')
+        response = await call_next(request)
+        return response
+
+    # return mcp
+    return app
 
 def parse_args():
     """Parse command line arguments."""
@@ -5459,7 +5481,8 @@ def main():
         mcp = setup_mcp_server(hexstrike_client)
         logger.info("🚀 Starting HexStrike AI MCP server")
         logger.info("🤖 Ready to serve AI agents with enhanced cybersecurity capabilities")
-        mcp.run(transport="streamable-http")
+        # mcp.run(transport="streamable-http")
+        uvicorn.run(mcp, port=8001)
     except Exception as e:
         logger.error(f"💥 Error starting MCP server: {str(e)}")
         import traceback
