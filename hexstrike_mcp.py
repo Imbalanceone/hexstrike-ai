@@ -5482,7 +5482,7 @@ def main():
         logger.info("🚀 Starting HexStrike AI MCP server")
         logger.info("🤖 Ready to serve AI agents with enhanced cybersecurity capabilities")
         # mcp.run(transport="streamable-http")
-        uvicorn.run(mcp, port=8001)
+        uvicorn.run(mcp, port=8001,host="0.0.0.0")
     except Exception as e:
         logger.error(f"💥 Error starting MCP server: {str(e)}")
         import traceback
